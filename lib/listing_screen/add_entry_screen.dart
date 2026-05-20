@@ -10,28 +10,20 @@ class AddEntryScreen extends StatefulWidget {
   });
 
   @override
-  State<AddEntryScreen> createState() =>
-      _AddEntryScreenState();
+  State<AddEntryScreen> createState() => _AddEntryScreenState();
 }
 
-class _AddEntryScreenState
-    extends State<AddEntryScreen> {
-  final titleController =
-      TextEditingController();
-
-  final amountController =
-      TextEditingController();
+class _AddEntryScreenState extends State<AddEntryScreen> {
+  final titleController = TextEditingController();
+  final amountController = TextEditingController();
 
   late String selectedType;
-
-  DateTime selectedDate =
-      DateTime.now();
+  DateTime selectedDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    selectedType =
-        widget.type ?? "Cash Out";
+    selectedType = widget.type ?? "Cash Out";
   }
 
   @override
@@ -41,8 +33,8 @@ class _AddEntryScreenState
     super.dispose();
   }
 
+  // CREATE - returns new entry map back to ListingScreen
   void _saveEntry() {
-    // Validate inputs
     if (titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter a title")),
@@ -58,31 +50,23 @@ class _AddEntryScreenState
     }
 
     try {
-      final amount = double.parse(
-        amountController.text,
-      );
+      final amount = double.parse(amountController.text);
 
-      Navigator.pop(
-        context,
-        {
-          'title': titleController.text,
-          'amount': amount,
-          'date': selectedDate,
-          'type': selectedType,
-        },
-      );
+      Navigator.pop(context, {
+        'title': titleController.text,
+        'amount': amount,
+        'date': selectedDate,
+        'type': selectedType,
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter a valid amount"),
-        ),
+        const SnackBar(content: Text("Please enter a valid amount")),
       );
     }
   }
 
   Future<void> _selectDate() async {
-    final DateTime? pickedDate =
-        await showDatePicker(
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: selectedDate,
       firstDate: DateTime(2020),
@@ -90,12 +74,9 @@ class _AddEntryScreenState
     );
 
     if (pickedDate != null) {
-      final TimeOfDay? pickedTime =
-          await showTimePicker(
+      final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(
-          selectedDate,
-        ),
+        initialTime: TimeOfDay.fromDateTime(selectedDate),
       );
 
       if (pickedTime != null) {
@@ -137,9 +118,8 @@ class _AddEntryScreenState
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: "Amount",
                 border: OutlineInputBorder(),
@@ -151,12 +131,7 @@ class _AddEntryScreenState
             DropdownButtonFormField<String>(
               value: selectedType,
               items: ['Cash In', 'Cash Out']
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(e),
-                    ),
-                  )
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                   .toList(),
               onChanged: (value) {
                 setState(() {
@@ -173,11 +148,7 @@ class _AddEntryScreenState
               children: [
                 Expanded(
                   child: Text(
-                    DateFormat(
-                      'dd MMM yyyy • hh:mm a',
-                    ).format(
-                      selectedDate,
-                    ),
+                    DateFormat('dd MMM yyyy • hh:mm a').format(selectedDate),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -186,9 +157,7 @@ class _AddEntryScreenState
                 ),
                 ElevatedButton(
                   onPressed: _selectDate,
-                  child: const Text(
-                    "Select Date & Time",
-                  ),
+                  child: const Text("Select Date & Time"),
                 ),
               ],
             ),

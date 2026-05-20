@@ -10,34 +10,23 @@ class EntryDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<EntryDetailScreen> createState() =>
-      _EntryDetailScreenState();
+  State<EntryDetailScreen> createState() => _EntryDetailScreenState();
 }
 
-class _EntryDetailScreenState
-    extends State<EntryDetailScreen> {
+class _EntryDetailScreenState extends State<EntryDetailScreen> {
   late TextEditingController titleController;
-
   late TextEditingController amountController;
-
   late String selectedType;
-
   late DateTime selectedDate;
 
   @override
   void initState() {
     super.initState();
-
-    titleController = TextEditingController(
-      text: widget.entry['title'],
-    );
-
-    amountController = TextEditingController(
-      text: widget.entry['amount'].toString(),
-    );
-
+    titleController =
+        TextEditingController(text: widget.entry['title']);
+    amountController =
+        TextEditingController(text: widget.entry['amount'].toString());
     selectedType = widget.entry['type'];
-
     selectedDate = widget.entry['date'];
   }
 
@@ -48,8 +37,8 @@ class _EntryDetailScreenState
     super.dispose();
   }
 
+  // UPDATE - returns updated entry map back to ListingScreen
   void _saveEntry() {
-    // Validate inputs
     if (titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter a title")),
@@ -65,37 +54,30 @@ class _EntryDetailScreenState
     }
 
     try {
-      final amount = double.parse(
-        amountController.text,
-      );
+      final amount = double.parse(amountController.text);
 
-      Navigator.pop(
-        context,
-        {
-          'title': titleController.text,
-          'amount': amount,
-          'date': selectedDate,
-          'type': selectedType,
-        },
-      );
+      Navigator.pop(context, {
+        'title': titleController.text,
+        'amount': amount,
+        'date': selectedDate,
+        'type': selectedType,
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter a valid amount"),
-        ),
+        const SnackBar(content: Text("Please enter a valid amount")),
       );
     }
   }
 
+  // DELETE - returns "delete" string back to ListingScreen
   void _deleteEntry() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Delete Entry"),
-          content: const Text(
-            "Are you sure you want to delete this entry?",
-          ),
+          content:
+              const Text("Are you sure you want to delete this entry?"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -118,8 +100,7 @@ class _EntryDetailScreenState
   }
 
   Future<void> _selectDate() async {
-    final DateTime? pickedDate =
-        await showDatePicker(
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: selectedDate,
       firstDate: DateTime(2020),
@@ -127,12 +108,9 @@ class _EntryDetailScreenState
     );
 
     if (pickedDate != null) {
-      final TimeOfDay? pickedTime =
-          await showTimePicker(
+      final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(
-          selectedDate,
-        ),
+        initialTime: TimeOfDay.fromDateTime(selectedDate),
       );
 
       if (pickedTime != null) {
@@ -157,9 +135,7 @@ class _EntryDetailScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Entry Details",
-        ),
+        title: const Text("Entry Details"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -175,9 +151,8 @@ class _EntryDetailScreenState
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: "Amount",
                 border: OutlineInputBorder(),
@@ -188,12 +163,7 @@ class _EntryDetailScreenState
             DropdownButtonFormField<String>(
               value: selectedType,
               items: ['Cash In', 'Cash Out']
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(e),
-                    ),
-                  )
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                   .toList(),
               onChanged: (value) {
                 setState(() {
@@ -210,11 +180,7 @@ class _EntryDetailScreenState
               children: [
                 Expanded(
                   child: Text(
-                    DateFormat(
-                      'dd MMM yyyy • hh:mm a',
-                    ).format(
-                      selectedDate,
-                    ),
+                    DateFormat('dd MMM yyyy • hh:mm a').format(selectedDate),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -223,9 +189,7 @@ class _EntryDetailScreenState
                 ),
                 ElevatedButton(
                   onPressed: _selectDate,
-                  child: const Text(
-                    "Change Date & Time",
-                  ),
+                  child: const Text("Change Date & Time"),
                 ),
               ],
             ),
@@ -245,9 +209,7 @@ class _EntryDetailScreenState
                   backgroundColor: Colors.red,
                 ),
                 onPressed: _deleteEntry,
-                child: const Text(
-                  "Delete",
-                ),
+                child: const Text("Delete"),
               ),
             ),
           ],

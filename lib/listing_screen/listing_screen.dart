@@ -4,40 +4,23 @@ import 'package:intl/intl.dart';
 import 'add_entry_screen.dart';
 import 'entry_detail_screen.dart';
 
-class ListingScreen extends StatefulWidget {
-  const ListingScreen({super.key});
+class ListingScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> entries;
+  final String selectedFilter;
+  final Function(Map<String, dynamic>) onAddEntry;
+  final Function(int, Map<String, dynamic>) onUpdateEntry;
+  final Function(int) onDeleteEntry;
+  final Function(String) onFilterChanged;
 
-  @override
-  State<ListingScreen> createState() =>
-      _ListingScreenState();
-}
-
-class _ListingScreenState
-    extends State<ListingScreen> {
-  final List<Map<String, dynamic>> entries = [];
-
-  String selectedFilter = "Daily";
-
-  void addEntry(Map<String, dynamic> entry) {
-    setState(() {
-      entries.add(entry);
-    });
-  }
-
-  void updateEntry(
-    int index,
-    Map<String, dynamic> updatedEntry,
-  ) {
-    setState(() {
-      entries[index] = updatedEntry;
-    });
-  }
-
-  void deleteEntry(int index) {
-    setState(() {
-      entries.removeAt(index);
-    });
-  }
+  const ListingScreen({
+    super.key,
+    required this.entries,
+    required this.selectedFilter,
+    required this.onAddEntry,
+    required this.onUpdateEntry,
+    required this.onDeleteEntry,
+    required this.onFilterChanged,
+  });
 
   List<Map<String, dynamic>> getFilteredEntries() {
     DateTime now = DateTime.now();
@@ -56,8 +39,7 @@ class _ListingScreenState
       }
 
       if (selectedFilter == "Monthly") {
-        return date.month == now.month &&
-            date.year == now.year;
+        return date.month == now.month && date.year == now.year;
       }
 
       return true;
@@ -70,24 +52,17 @@ class _ListingScreenState
 
     double cashIn = filteredEntries
         .where((e) => e['type'] == 'Cash In')
-        .fold(
-          0,
-          (sum, item) => sum + item['amount'],
-        );
+        .fold<double>(0.0, (sum, item) => sum + item['amount']);
 
     double cashOut = filteredEntries
         .where((e) => e['type'] == 'Cash Out')
-        .fold(
-          0,
-          (sum, item) => sum + item['amount'],
-        );
+        .fold<double>(0.0, (sum, item) => sum + item['amount']);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Expense Manager"),
+        title: const Text("Cash Mate"),
         centerTitle: true,
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -97,27 +72,24 @@ class _ListingScreenState
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Colors.teal,
-                    Colors.green,
-                  ],
+                  colors: [Colors.teal, Colors.green],
                 ),
-                borderRadius:
-                    BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20),
               ),
-
               child: Column(
                 children: [
                   // FILTERS
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment
-                            .spaceEvenly,
-                    children: [
-                      filterButton("Daily"),
-                      filterButton("Weekly"),
-                      filterButton("Monthly"),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _filterButton(context, "Daily"),
+                        const SizedBox(width: 10),
+                        _filterButton(context, "Weekly"),
+                        const SizedBox(width: 10),
+                        _filterButton(context, "Monthly"),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 20),
@@ -126,21 +98,11 @@ class _ListingScreenState
                   Row(
                     children: [
                       Expanded(
-                        child: totalCard(
-                          "Cash In",
-                          cashIn,
-                          Colors.green,
-                        ),
+                        child: _totalCard("Cash In", cashIn, Colors.green),
                       ),
-
                       const SizedBox(width: 12),
-
                       Expanded(
-                        child: totalCard(
-                          "Cash Out",
-                          cashOut,
-                          Colors.red,
-                        ),
+                        child: _totalCard("Cash Out", cashOut, Colors.red),
                       ),
                     ],
                   ),
@@ -150,54 +112,46 @@ class _ListingScreenState
 
             const SizedBox(height: 20),
 
-            // HEADER
+            // HEADER ROW
             Container(
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: Colors.teal,
-                borderRadius:
-                    BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12),
               ),
-
               child: Row(
                 children: const [
                   Expanded(
                     flex: 2,
                     child: Text(
                       "Date",
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.white,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-
                   Expanded(
                     child: Center(
                       child: Text(
                         "Cash In",
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
-
                   Expanded(
                     child: Center(
                       child: Text(
                         "Cash Out",
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -210,145 +164,113 @@ class _ListingScreenState
 
             // LIST
             Expanded(
-              child: ListView.builder(
-                itemCount:
-                    filteredEntries.length,
+              child: filteredEntries.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "No entries found.\nTap Cash In or Cash Out to add one.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: filteredEntries.length,
+                      itemBuilder: (context, index) {
+                        final entry = filteredEntries[index];
+                        bool isCashIn = entry['type'] == "Cash In";
 
-                itemBuilder: (
-                  context,
-                  index,
-                ) {
-                  final entry =
-                      filteredEntries[index];
+                        return GestureDetector(
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EntryDetailScreen(
+                                  entry: entry,
+                                ),
+                              ),
+                            );
 
-                  bool isCashIn =
-                      entry['type'] ==
-                          "Cash In";
-
-                  return GestureDetector(
-                    onTap: () async {
-                      final result =
-                          await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) =>
-                                  EntryDetailScreen(
-                            entry: entry,
-                          ),
-                        ),
-                      );
-
-                      if (result != null) {
-                        if (result ==
-                            "delete") {
-                          deleteEntry(
-                            entries.indexOf(
-                              entry,
-                            ),
-                          );
-                        } else {
-                          updateEntry(
-                            entries.indexOf(
-                              entry,
-                            ),
-                            result,
-                          );
-                        }
-                      }
-                    },
-
-                    child: Card(
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.all(
-                          14,
-                        ),
-
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
-
+                            if (result != null) {
+                              if (result == "delete") {
+                                // DELETE
+                                onDeleteEntry(entries.indexOf(entry));
+                              } else {
+                                // UPDATE
+                                onUpdateEntry(entries.indexOf(entry), result);
+                              }
+                            }
+                          },
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    entry['title'],
-                                    style:
-                                        const TextStyle(
-                                      fontWeight:
-                                          FontWeight
-                                              .bold,
+                                  Expanded(
+                                    flex: 2,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          entry['title'],
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          DateFormat('dd MMM yyyy')
+                                              .format(entry['date']),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          DateFormat('hh:mm a')
+                                              .format(entry['date']),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
 
-                                  Text(
-                                    DateFormat(
-                                      'dd MMM yyyy',
-                                    ).format(
-                                      entry['date'],
+                                  // CASH IN column
+                                  Expanded(
+                                    child: Center(
+                                      child: isCashIn
+                                          ? FittedBox(
+                                              child: Text(
+                                                '₹${entry['amount']}',
+                                                style: const TextStyle(
+                                                  color: Colors.green,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            )
+                                          : const Text("-"),
                                     ),
                                   ),
 
-                                  Text(
-                                    DateFormat(
-                                      'hh:mm a',
-                                    ).format(
-                                      entry['date'],
+                                  // CASH OUT column
+                                  Expanded(
+                                    child: Center(
+                                      child: !isCashIn
+                                          ? FittedBox(
+                                              child: Text(
+                                                '₹${entry['amount']}',
+                                                style: const TextStyle(
+                                                  color: Colors.red,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            )
+                                          : const Text("-"),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-
-                            Expanded(
-                              child: Center(
-                                child: isCashIn
-                                    ? Text(
-                                        '₹${entry['amount']}',
-                                        style:
-                                            const TextStyle(
-                                          color:
-                                              Colors.green,
-                                          fontWeight:
-                                              FontWeight.bold,
-                                        ),
-                                      )
-                                    : const Text(
-                                        "-",
-                                      ),
-                              ),
-                            ),
-
-                            Expanded(
-                              child: Center(
-                                child: !isCashIn
-                                    ? Text(
-                                        '₹${entry['amount']}',
-                                        style:
-                                            const TextStyle(
-                                          color:
-                                              Colors.red,
-                                          fontWeight:
-                                              FontWeight.bold,
-                                        ),
-                                      )
-                                    : const Text(
-                                        "-",
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -357,70 +279,55 @@ class _ListingScreenState
       // BOTTOM BUTTONS
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
-
         child: Row(
           children: [
+            // CREATE - Cash In
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Colors.green,
+                  backgroundColor: Colors.green,
                 ),
-
                 onPressed: () async {
-                  final result =
-                      await Navigator.push(
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder:
-                          (context) =>
-                              const AddEntryScreen(
+                      builder: (context) => const AddEntryScreen(
                         type: "Cash In",
                       ),
                     ),
                   );
 
                   if (result != null) {
-                    addEntry(result);
+                    onAddEntry(result);
                   }
                 },
-
-                child: const Text(
-                  "Cash In",
-                ),
+                child: const Text("Cash In"),
               ),
             ),
 
             const SizedBox(width: 12),
 
+            // CREATE - Cash Out
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Colors.red,
+                  backgroundColor: Colors.red,
                 ),
-
                 onPressed: () async {
-                  final result =
-                      await Navigator.push(
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder:
-                          (context) =>
-                              const AddEntryScreen(
+                      builder: (context) => const AddEntryScreen(
                         type: "Cash Out",
                       ),
                     ),
                   );
 
                   if (result != null) {
-                    addEntry(result);
+                    onAddEntry(result);
                   }
                 },
-
-                child: const Text(
-                  "Cash Out",
-                ),
+                child: const Text("Cash Out"),
               ),
             ),
           ],
@@ -429,63 +336,48 @@ class _ListingScreenState
     );
   }
 
-  Widget filterButton(String text) {
+  Widget _filterButton(BuildContext context, String text) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor:
-            selectedFilter == text
-                ? Colors.white
-                : Colors.white24,
+            selectedFilter == text ? Colors.white : Colors.white24,
       ),
-
       onPressed: () {
-        setState(() {
-          selectedFilter = text;
-        });
+        onFilterChanged(text);
       },
-
       child: Text(
         text,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color:
-              selectedFilter == text
-                  ? Colors.teal
-                  : Colors.white,
+          color: selectedFilter == text ? Colors.teal : Colors.white,
         ),
       ),
     );
   }
 
-  Widget totalCard(
-    String title,
-    double amount,
-    Color color,
-  ) {
+  Widget _totalCard(String title, double amount, Color color) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white24,
-        borderRadius:
-            BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14),
       ),
-
       child: Column(
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
-            ),
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white),
           ),
-
           const SizedBox(height: 8),
-
-          Text(
-            '₹${amount.toStringAsFixed(0)}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+          FittedBox(
+            child: Text(
+              '₹${amount.toStringAsFixed(0)}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
