@@ -119,8 +119,8 @@ class ListingScreen extends StatelessWidget {
                 color: Colors.teal,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                children: const [
+              child: const Row(
+                children: [
                   Expanded(
                     flex: 2,
                     child: Text(

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:expense_management/listing_screen/my_widget.dart';
+
 
 
 class SplashScreen extends StatefulWidget {
@@ -15,11 +17,11 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     // Navigate after 3 seconds
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 1), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
+          builder: (context) => const MyWidget(),
         ),
       );
     });
@@ -27,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: Color.fromARGB(255, 66, 196, 71),
       body: Center(
         child: Column(
@@ -38,8 +40,8 @@ class _SplashScreenState extends State<SplashScreen> {
               size: 100,
               color: Colors.white,
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20),
+            Text(
               "Cash Mate",
               style: TextStyle(
                 fontSize: 30,
@@ -47,30 +49,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 10),
-            const CircularProgressIndicator(
+            SizedBox(height: 10),
+            CircularProgressIndicator(
               color: Colors.white,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Expense Tracker"),
-      ),
-      body: const Center(
-        child: Text(
-          "Welcome to Expense Tracker",
-          style: TextStyle(fontSize: 22),
         ),
       ),
     );
