@@ -1,7 +1,28 @@
-import 'dart:async';
+import 'package:expense_management/widgets/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'widgets/splash_screen.dart';
+
 
 void main() {
   runApp(const MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Expense Management',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),  
+      debugShowCheckedModeBanner: false,
+      home: const SplashScreen(),
+    );
+  }
 }
